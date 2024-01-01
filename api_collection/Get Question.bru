@@ -1,0 +1,20 @@
+meta {
+  name: Get Question
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:5000/questions?limit=100&offset=0
+  body: none
+  auth: none
+}
+
+query {
+  limit: 100
+  offset: 0
+}
+
+headers {
+  Content-Type: Application/Json
+}

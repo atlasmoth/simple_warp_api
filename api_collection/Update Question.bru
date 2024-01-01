@@ -1,0 +1,23 @@
+meta {
+  name: Update Question
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:5000/questions/2
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": 2,
+    "title": "Who shot Bigee? Do you know?",
+    "content": "Who knows?",
+    "tags": [
+      "Diddy",
+      "Sean"
+    ]
+  }
+}

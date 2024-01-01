@@ -1,0 +1,34 @@
+version: "3.7"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "${DATABASE_USER}",
+          "-d",
+          "${DATABASE_PASSWORD}",
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    env_file: ./.env
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5430:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
