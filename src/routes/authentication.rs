@@ -68,7 +68,10 @@ fn verify_password(hash: &str, password: &[u8]) -> Result<bool, argon2::Error> {
 fn issue_token(account_id: AccountId) -> String {
     let current_date_time = Utc::now();
     let dt = current_date_time + chrono::Duration::days(1);
-
+    println!(
+        "{}",
+        std::env::var("JWT_SECRET").expect("JWT_SECRET must be set.")
+    );
     paseto::tokens::PasetoBuilder::new()
         .set_encryption_key(&Vec::from(
             std::env::var("JWT_SECRET")
@@ -76,7 +79,7 @@ fn issue_token(account_id: AccountId) -> String {
                 .as_bytes(),
         ))
         .set_expiration(&dt)
-        .set_not_before(&Utc::now())
+        // .set_not_before(&Utc::now())
         .set_claim("account_id", serde_json::json!(account_id))
         .build()
         .expect("Failed to construct paseto token w/ builder!")
@@ -86,9 +89,26 @@ pub fn auth() -> impl Filter<Extract = (Session,), Error = warp::Rejection> + Cl
     warp::header::<String>("Authorization").and_then(|token: String| {
         let token = match verify_token(token) {
             Ok(t) => t,
-            Err(_) => return future::ready(Err(warp::reject::reject())),
+            Err(_) => return future::ready(Err(warp::reject::custom(Error::Unauthorized))),
         };
-
         future::ready(Ok(token))
     })
+}
+
+#[cfg(test)]
+mod authentication_tests {
+    use super::{auth, issue_token, AccountId};
+
+    #[tokio::test]
+    async fn post_questions_auth() {
+        let token = issue_token(AccountId(3));
+
+        let filter = auth();
+
+        let res = warp::test::request()
+            .header("Authorization", token)
+            .filter(&filter);
+
+        assert_eq!(res.await.unwrap().account_id, AccountId(3));
+    }
 }
