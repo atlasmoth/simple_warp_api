@@ -45,7 +45,9 @@ pub fn verify_token(token: String) -> Result<Session, Error> {
     let token = paseto::tokens::validate_local_token(
         &token,
         None,
-        &"RANDOM WORDS WINTER MACINTOSH PC".as_bytes(),
+        std::env::var("JWT_SECRET")
+            .expect("JWT_SECRET must be set.")
+            .as_bytes(),
         &paseto::tokens::TimeBackend::Chrono,
     )
     .map_err(|_| Error::CannotDecryptToken)?;
@@ -68,7 +70,11 @@ fn issue_token(account_id: AccountId) -> String {
     let dt = current_date_time + chrono::Duration::days(1);
 
     paseto::tokens::PasetoBuilder::new()
-        .set_encryption_key(&Vec::from("RANDOM WORDS WINTER MACINTOSH PC".as_bytes()))
+        .set_encryption_key(&Vec::from(
+            std::env::var("JWT_SECRET")
+                .expect("JWT_SECRET must be set.")
+                .as_bytes(),
+        ))
         .set_expiration(&dt)
         .set_not_before(&Utc::now())
         .set_claim("account_id", serde_json::json!(account_id))

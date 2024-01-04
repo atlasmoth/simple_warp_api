@@ -15,6 +15,7 @@ mod types;
 async fn main() {
     dotenv().ok();
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
+    std::env::var("JWT_SECRET").expect("JWT_SECRET must be set.");
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "handle_errors=warn,simple_rust_api=warn,warp=warn".to_owned());
 
